@@ -2,7 +2,7 @@
 
 $GLOBALS['TL_DCA']['tl_module']['palettes']['sibling_navigation_news']  = '
     {title_legend},name,headline,type;
-    {config_legend},snn_news_archives;
+    {config_legend},snn_news_archives,news_order;
     {protected_legend:hide},protected;
     {expert_legend:hide},guests,cssID,space;
     {invisible_legend:hide},invisible,start,stop';

@@ -36,7 +36,7 @@ class SiblingNavigation extends \Module
 
         $helper = new NewsHelper();
 
-        $siblingNavigation = $helper->generateSiblingNavigation($objPage, $this->snn_news_archives);
+        $siblingNavigation = $helper->generateSiblingNavigation($objPage, $this->snn_news_archives, $this->news_order);
 
         $this->Template->prev      = $siblingNavigation['prev'];
         $this->Template->next      = $siblingNavigation['next'];

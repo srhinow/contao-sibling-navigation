@@ -35,7 +35,7 @@ class NewsHelper extends \Backend
         return $arrArchives;
     }
 
-    public function generateSiblingNavigation($objPage, $newsArchives)
+    public function generateSiblingNavigation($objPage, $newsArchives, $newsOrder)
     {
         // Set the item from the auto_item parameter
         if (!isset($_GET['items']) && $GLOBALS['TL_CONFIG']['useAutoItem'] && isset($_GET['auto_item'])) {
@@ -65,20 +65,64 @@ class NewsHelper extends \Backend
             $this->news_archives = [$current->pid];
         }
 
+
+        $arrOptions = [
+            'columns' => [
+                "pid IN (?)",
+                "published = '1'"
+            ],
+            'values' => [
+                implode(',', $this->news_archives),
+            ]
+        ];
+        $t = 'tl_news';
+        switch ($newsOrder)
+        {
+            case 'order_headline_asc':
+                $arrOptions['order'] = "$t.headline";
+                break;
+
+            case 'order_headline_desc':
+                $arrOptions['order'] = "$t.headline DESC";
+                break;
+
+            case 'order_random':
+                $arrOptions['order'] = "RAND()";
+                break;
+
+            case 'order_date_asc':
+                $arrPrevOptions['order'] = "$t.time ASC, $t.date ASC";
+                $arrPrevOptions['column'][] = "tl_news.date > ?";
+                $arrPrevOptions['column'][] = "tl_news.time > ?";
+                $arrPrevOptions['value'][] = $current->date;
+                $arrPrevOptions['value'][] = $current->time;
+
+                $arrNextOptions['order'] = "$t.time DESC, $t.date DESC";
+                $arrNextOptions['column'][] = "tl_news.date < ?";
+                $arrNextOptions['column'][] = "tl_news.time < ?";
+                $arrNextOptions['value'][] = $current->date;
+                $arrNextOptions['value'][] = $current->time;
+                break;
+
+            default:
+                $arrPrevOptions['order'] = "$t.time DESC, $t.date DESC";
+                $arrPrevOptions['column'][] = "tl_news.date < ?";
+                $arrPrevOptions['column'][] = "tl_news.time < ?";
+                $arrPrevOptions['value'][] = $current->date;
+                $arrPrevOptions['value'][] = $current->time;
+
+                $arrNextOptions['order'] = "$t.time ASC, $t.date ASC";
+                $arrNextOptions['column'][] = "tl_news.date > ?";
+                $arrNextOptions['column'][] = "tl_news.time > ?";
+                $arrNextOptions['value'][] = $current->date;
+                $arrNextOptions['value'][] = $current->time;
+        }
+
         // find prev
         $prev = \NewsModel::findAll([
-            'column' => [
-                "pid IN (?)",
-                "published = '1'",
-                "tl_news.date < ?",
-                "tl_news.time < ?",
-            ],
-            'value' => [
-                implode(',', $this->news_archives),
-                $current->date,
-                $current->time,
-            ],
-            'order' => 'tl_news.time DESC, tl_news.date DESC',
+            'column' => $arrPrevOptions['column'],
+            'value' => $arrPrevOptions['value'],
+            'order' => $arrPrevOptions['order'],
             'limit' => 1,
         ]);
 
@@ -87,18 +131,9 @@ class NewsHelper extends \Backend
         }
 
         $next = \NewsModel::findAll([
-            'column' => [
-                "pid IN (?)",
-                "published = '1'",
-                "tl_news.date > ?",
-                "tl_news.time > ?",
-            ],
-            'value' => [
-                implode(',', $this->news_archives),
-                $current->date,
-                $current->time,
-            ],
-            'order' => 'tl_news.time ASC, tl_news.date ASC',
+            'column' => $arrNextOptions['column'],
+            'value' => $arrNextOptions['value'],
+            'order' => $arrNextOptions['order'],
             'limit' => 1,
         ]);
 
@@ -168,6 +203,7 @@ class NewsHelper extends \Backend
                 : $news->id)
         );
 
+        if($_SERVER['QUERY_STRING'])  $strUrl .= '?'.$_SERVER['QUERY_STRING'];
         return $strUrl;
     }
 }
