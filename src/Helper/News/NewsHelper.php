@@ -2,6 +2,8 @@
 
 namespace Oneup\SiblingNavigation\Helper\News;
 
+use Contao\Input;
+
 class NewsHelper extends \Backend
 {
     /**
@@ -91,20 +93,6 @@ class NewsHelper extends \Backend
                 break;
 
             case 'order_date_asc':
-                $arrPrevOptions['order'] = "$t.time ASC, $t.date ASC";
-                $arrPrevOptions['column'][] = "tl_news.date > ?";
-                $arrPrevOptions['column'][] = "tl_news.time > ?";
-                $arrPrevOptions['value'][] = $current->date;
-                $arrPrevOptions['value'][] = $current->time;
-
-                $arrNextOptions['order'] = "$t.time DESC, $t.date DESC";
-                $arrNextOptions['column'][] = "tl_news.date < ?";
-                $arrNextOptions['column'][] = "tl_news.time < ?";
-                $arrNextOptions['value'][] = $current->date;
-                $arrNextOptions['value'][] = $current->time;
-                break;
-
-            default:
                 $arrPrevOptions['order'] = "$t.time DESC, $t.date DESC";
                 $arrPrevOptions['column'][] = "tl_news.date < ?";
                 $arrPrevOptions['column'][] = "tl_news.time < ?";
@@ -116,6 +104,36 @@ class NewsHelper extends \Backend
                 $arrNextOptions['column'][] = "tl_news.time > ?";
                 $arrNextOptions['value'][] = $current->date;
                 $arrNextOptions['value'][] = $current->time;
+                break;
+
+            default:
+                $arrPrevOptions['order'] = "$t.time ASC, $t.date ASC";
+                $arrPrevOptions['column'][] = "tl_news.date > ?";
+                $arrPrevOptions['column'][] = "tl_news.time > ?";
+                $arrPrevOptions['value'][] = $current->date;
+                $arrPrevOptions['value'][] = $current->time;
+
+                $arrNextOptions['order'] = "$t.time DESC, $t.date DESC";
+                $arrNextOptions['column'][] = "tl_news.date < ?";
+                $arrNextOptions['column'][] = "tl_news.time < ?";
+                $arrNextOptions['value'][] = $current->date;
+                $arrNextOptions['value'][] = $current->time;
+        }
+
+        if(Input::get('year')) {
+            $arrPrevOptions['column'][] = "tl_news.date >= ?";
+            $arrPrevOptions['value'][] = strtotime(Input::get('year').'-01-01');
+
+            $arrNextOptions['column'][] = "tl_news.date <= ?";
+            $arrNextOptions['value'][] = strtotime(Input::get('year').'-12-31');
+        }
+
+        if(Input::get('month')) {
+            $arrPrevOptions['column'][] = "tl_news.date >= ?";
+            $arrPrevOptions['value'][] = strtotime(Input::get('month').'-01');
+
+            $arrNextOptions['column'][] = "tl_news.date <= ?";
+            $arrNextOptions['value'][] = strtotime(Input::get('month').'-31');
         }
 
         // find prev
@@ -141,14 +159,14 @@ class NewsHelper extends \Backend
             $next = $next->current();
         }
 
-        // take care, prev/next are swapped
+        // take care, prev/next are swapped <== its now correct
         return [
-            'prev'      => $this->generateNewsUrl($objPage, $next),
-            'next'      => $this->generateNewsUrl($objPage, $prev),
+            'prev'      => $this->generateNewsUrl($objPage, $prev),
+            'next'      => $this->generateNewsUrl($objPage, $next),
             'prevTitle' => $next->headline,
             'nextTitle' => $prev->headline,
-            'objPrev'   => $next,
-            'objNext'   => $prev,
+            'objPrev'   => $prev,
+            'objNext'   => $next,
         ];
     }
 
