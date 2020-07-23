@@ -78,68 +78,58 @@ class NewsHelper extends \Backend
             ]
         ];
         $t = 'tl_news';
+        $arrPrevOptions = $arrOptions;
+        $arrNextOptions = $arrOptions;
         switch ($newsOrder)
         {
-            case 'order_headline_asc':
-                $arrOptions['order'] = "$t.headline";
-                break;
-
-            case 'order_headline_desc':
-                $arrOptions['order'] = "$t.headline DESC";
-                break;
-
-            case 'order_random':
-                $arrOptions['order'] = "RAND()";
-                break;
-
             case 'order_date_asc':
                 $arrPrevOptions['order'] = "$t.time DESC, $t.date DESC";
-                $arrPrevOptions['column'][] = "tl_news.date < ?";
-                $arrPrevOptions['column'][] = "tl_news.time < ?";
-                $arrPrevOptions['value'][] = $current->date;
-                $arrPrevOptions['value'][] = $current->time;
+                $arrPrevOptions['columns'][] = "tl_news.date < ?";
+                $arrPrevOptions['columns'][] = "tl_news.time < ?";
+                $arrPrevOptions['values'][] = $current->date;
+                $arrPrevOptions['values'][] = $current->time;
 
                 $arrNextOptions['order'] = "$t.time ASC, $t.date ASC";
-                $arrNextOptions['column'][] = "tl_news.date > ?";
-                $arrNextOptions['column'][] = "tl_news.time > ?";
-                $arrNextOptions['value'][] = $current->date;
-                $arrNextOptions['value'][] = $current->time;
+                $arrNextOptions['columns'][] = "tl_news.date > ?";
+                $arrNextOptions['columns'][] = "tl_news.time > ?";
+                $arrNextOptions['values'][] = $current->date;
+                $arrNextOptions['values'][] = $current->time;
                 break;
 
             default:
                 $arrPrevOptions['order'] = "$t.time ASC, $t.date ASC";
-                $arrPrevOptions['column'][] = "tl_news.date > ?";
-                $arrPrevOptions['column'][] = "tl_news.time > ?";
-                $arrPrevOptions['value'][] = $current->date;
-                $arrPrevOptions['value'][] = $current->time;
+                $arrPrevOptions['columns'][] = "tl_news.date > ?";
+                $arrPrevOptions['columns'][] = "tl_news.time > ?";
+                $arrPrevOptions['values'][] = $current->date;
+                $arrPrevOptions['values'][] = $current->time;
 
                 $arrNextOptions['order'] = "$t.time DESC, $t.date DESC";
-                $arrNextOptions['column'][] = "tl_news.date < ?";
-                $arrNextOptions['column'][] = "tl_news.time < ?";
-                $arrNextOptions['value'][] = $current->date;
-                $arrNextOptions['value'][] = $current->time;
+                $arrNextOptions['columns'][] = "tl_news.date < ?";
+                $arrNextOptions['columns'][] = "tl_news.time < ?";
+                $arrNextOptions['values'][] = $current->date;
+                $arrNextOptions['values'][] = $current->time;
         }
 
         if(Input::get('year')) {
-            $arrPrevOptions['column'][] = "tl_news.date >= ?";
-            $arrPrevOptions['value'][] = strtotime(Input::get('year').'-01-01');
+            $arrPrevOptions['columns'][] = "tl_news.date >= ?";
+            $arrPrevOptions['values'][] = strtotime(Input::get('year').'-01-01');
 
-            $arrNextOptions['column'][] = "tl_news.date <= ?";
-            $arrNextOptions['value'][] = strtotime(Input::get('year').'-12-31');
+            $arrNextOptions['columns'][] = "tl_news.date <= ?";
+            $arrNextOptions['values'][] = strtotime(Input::get('year').'-12-31');
         }
 
         if(Input::get('month')) {
-            $arrPrevOptions['column'][] = "tl_news.date >= ?";
-            $arrPrevOptions['value'][] = strtotime(Input::get('month').'-01');
+            $arrPrevOptions['columns'][] = "tl_news.date >= ?";
+            $arrPrevOptions['values'][] = strtotime(Input::get('month').'-01');
 
-            $arrNextOptions['column'][] = "tl_news.date <= ?";
-            $arrNextOptions['value'][] = strtotime(Input::get('month').'-31');
+            $arrNextOptions['columns'][] = "tl_news.date <= ?";
+            $arrNextOptions['values'][] = strtotime(Input::get('month').'-31');
         }
 
         // find prev
         $prev = \NewsModel::findAll([
-            'column' => $arrPrevOptions['column'],
-            'value' => $arrPrevOptions['value'],
+            'column' => $arrPrevOptions['columns'],
+            'value' => $arrPrevOptions['values'],
             'order' => $arrPrevOptions['order'],
             'limit' => 1,
         ]);
@@ -149,8 +139,8 @@ class NewsHelper extends \Backend
         }
 
         $next = \NewsModel::findAll([
-            'column' => $arrNextOptions['column'],
-            'value' => $arrNextOptions['value'],
+            'column' => $arrNextOptions['columns'],
+            'value' => $arrNextOptions['values'],
             'order' => $arrNextOptions['order'],
             'limit' => 1,
         ]);
